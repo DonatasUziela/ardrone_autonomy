@@ -9,9 +9,11 @@ class ARDroneDriver;
 #include <camera_info_manager/camera_info_manager.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/Imu.h>
+#include <std_msgs/String.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <std_srvs/Empty.h>
 #include <ardrone_autonomy/Navdata.h>
+#include <ardrone_autonomy/Ranges.h>
 #include "ardrone_sdk.h"
 #include <vector>
 #include <utils/ardrone_gen_ids.h>
@@ -56,6 +58,7 @@ public:
 
     void publish_video();
     void publish_navdata(navdata_unpacked_t &navdata_raw, const ros::Time &navdata_receive_time);
+    void publish_usbdata(std::string usbdata, const ros::Time &navdata_receive_time); //add Alex
 
 private:
     void publish_tf();
@@ -80,7 +83,10 @@ private:
     ros::Publisher navdata_pub;
     ros::Publisher imu_pub;
     ros::Publisher mag_pub;
-
+    ros::Publisher usbdata_pub; //add Alex
+    ros::Publisher ranges_pub; //add Alex
+    
+    
     tf::TransformBroadcaster tf_broad;
 
 	//ros::Subscriber toggleCam_sub;
@@ -90,6 +96,8 @@ private:
     ros::ServiceServer imuReCalib_service;
     ros::ServiceServer flatTrim_service;
     ros::ServiceServer setFlightAnimation_service;
+
+    ros::ServiceServer magCalib_service; //add Alex
 	
 	/*
 	 * Orange Green : 1
@@ -131,6 +139,9 @@ private:
     sensor_msgs::Imu imu_msg;
     geometry_msgs::Vector3Stamped mag_msg;
     ardrone_autonomy::Navdata legacynavdata_msg;
+    
+    std_msgs::String usbdata_msg; //add Alex
+    ardrone_autonomy::Ranges ranges_msg; //add Alex
 
     // Manual IMU caliberation
     bool do_caliberation;

@@ -6,6 +6,8 @@
 #include <ardrone_tool/ardrone_tool.h>
 #include <ardrone_tool/ardrone_tool_configuration.h>
 #include <ardrone_tool/Navdata/ardrone_navdata_client.h>
+//add Alex
+#include <ardrone_tool/USBData/ardrone_usbdata_client.h> 
 #include <ardrone_tool/Academy/academy_download.h>
 #include <ardrone_tool/Academy/academy_upload.h>
 #include <ardrone_tool/UI/ardrone_input.h>
@@ -168,6 +170,8 @@ C_RESULT ardrone_tool_init( const char* ardrone_ip, size_t n, AT_CODEC_FUNCTIONS
 	ardrone_control_init();
 	ardrone_tool_configuration_init();
 	ardrone_navdata_client_init();
+	PRINT("Before usbdata_client_init\n");
+	ardrone_usbdata_client_init(); //add Alex
 
     // Init custom tool
     res = ardrone_tool_init_custom();
@@ -176,6 +180,7 @@ C_RESULT ardrone_tool_init( const char* ardrone_ip, size_t n, AT_CODEC_FUNCTIONS
 	ardrone_at_open();
 
 	START_THREAD(navdata_update, 0);
+	START_THREAD(usbdata_update, 0);
 	START_THREAD(ardrone_control, 0);
 
 	// Send start up configuration
@@ -278,6 +283,7 @@ C_RESULT ardrone_tool_shutdown()
 
   JOIN_THREAD(ardrone_control); 
   JOIN_THREAD(navdata_update);
+  JOIN_THREAD(usbdata_update);
 
   fflush (NULL);
 

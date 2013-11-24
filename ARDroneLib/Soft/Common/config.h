@@ -96,6 +96,8 @@
 #define RAW_CAPTURE_PORT        5557
 #define PRINTF_PORT             5558
 #define CONTROL_PORT            5559
+//add Alex
+#define USBDATA_PORT            5560
 
 ///////////////////////////////////////////////
 // Wired configuration

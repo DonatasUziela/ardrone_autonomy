@@ -221,49 +221,75 @@ extern "C" {
         return C_OK;
     }
     
-	C_RESULT navdata_custom_init(void *) {
-		return C_OK;
-	}
+    C_RESULT navdata_custom_init(void *) {
+      return C_OK;
+    }
 
     C_RESULT navdata_custom_process(const navdata_unpacked_t * const pnd) {
-        vp_os_mutex_lock(&navdata_lock);
-        shared_navdata_receive_time = ros::Time::now();
-        shared_raw_navdata = (navdata_unpacked_t*)pnd;
+      vp_os_mutex_lock(&navdata_lock);
+      shared_navdata_receive_time = ros::Time::now();
+      shared_raw_navdata = (navdata_unpacked_t*)pnd;
+      
+      if(realtime_navdata)
+      {
+	rosDriver->PublishNavdataTypes(*shared_raw_navdata, shared_navdata_receive_time); //if we're publishing navdata at full speed, publish!
+	rosDriver->publish_navdata(*shared_raw_navdata, shared_navdata_receive_time);
+      }
+      
+      current_navdata_id++;
+      vp_os_mutex_unlock(&navdata_lock);
+      return C_OK;
+    }
+	
+    C_RESULT navdata_custom_release(){ 
+      return C_OK;
+    }
+    
+    C_RESULT usbdata_custom_init(void *) {
+      PRINT("usbdata_custom_init\n");
+      return C_OK;
+    }
 
-        if(realtime_navdata)
-        {
-            rosDriver->PublishNavdataTypes(*shared_raw_navdata, shared_navdata_receive_time); //if we're publishing navdata at full speed, publish!
-            rosDriver->publish_navdata(*shared_raw_navdata, shared_navdata_receive_time);
-        }
-
-        current_navdata_id++;
-        vp_os_mutex_unlock(&navdata_lock);
-		return C_OK;
-	}
-
-	C_RESULT navdata_custom_release() {
-		return C_OK;
-	}
+    C_RESULT usbdata_custom_process(const uint8_t * const pnd) {
+      std::string str((const char*)pnd);
+      rosDriver->publish_usbdata(str, ros::Time::now());
+      return C_OK;
+    }
+	
+    C_RESULT usbdata_custom_release() {
+      return C_OK;
+    }
+    
     
     bool_t ardrone_tool_exit() {
         return (should_exit == 1);
     }
     
-	BEGIN_THREAD_TABLE
-    THREAD_TABLE_ENTRY(video_stage, 31)
-    THREAD_TABLE_ENTRY(update_ros, 43)
-    THREAD_TABLE_ENTRY(video_recorder, 20)
-    THREAD_TABLE_ENTRY(navdata_update, 31)
-//	THREAD_TABLE_ENTRY(ATcodec_Commands_Client, 43)
-	THREAD_TABLE_ENTRY(ardrone_control, 31)
-	END_THREAD_TABLE
+    BEGIN_THREAD_TABLE
+      THREAD_TABLE_ENTRY(video_stage, 31)
+      THREAD_TABLE_ENTRY(update_ros, 43)
+      THREAD_TABLE_ENTRY(video_recorder, 20)
+      THREAD_TABLE_ENTRY(navdata_update, 31)
+      THREAD_TABLE_ENTRY(usbdata_update, 31)     //add Alex
+      //	THREAD_TABLE_ENTRY(ATcodec_Commands_Client, 43)
+      THREAD_TABLE_ENTRY(ardrone_control, 31)
+    END_THREAD_TABLE
 
-	BEGIN_NAVDATA_HANDLER_TABLE
-	NAVDATA_HANDLER_TABLE_ENTRY(
-			navdata_custom_init,
-			navdata_custom_process,
-			navdata_custom_release,
-			NULL)
-	END_NAVDATA_HANDLER_TABLE
+    BEGIN_NAVDATA_HANDLER_TABLE
+    NAVDATA_HANDLER_TABLE_ENTRY(
+      navdata_custom_init,
+      navdata_custom_process,
+      navdata_custom_release,
+      NULL)
+    END_NAVDATA_HANDLER_TABLE
+    
+    BEGIN_USBDATA_HANDLER_TABLE
+    USBDATA_HANDLER_TABLE_ENTRY(
+      usbdata_custom_init,
+      usbdata_custom_process,
+      usbdata_custom_release,
+      NULL)
+    END_USBDATA_HANDLER_TABLE
+	
 }
 

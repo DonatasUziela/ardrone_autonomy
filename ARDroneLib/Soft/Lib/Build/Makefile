@@ -110,6 +110,7 @@ ifneq ($(CONTROL_DLL),yes)
          $(ARDRONE_TOOL_DIR)/Video/video_navdata_handler.c        \
          $(ARDRONE_TOOL_DIR)/Control/ardrone_control.c            \
          $(ARDRONE_TOOL_DIR)/Control/ardrone_navdata_control.c    \
+         $(ARDRONE_TOOL_DIR)/USBData/ardrone_usbdata_client.c     \
          $(ARDRONE_TOOL_DIR)/Navdata/ardrone_navdata_client.c
 
 

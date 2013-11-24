@@ -24,7 +24,7 @@ bool toggleCamCallback(std_srvs::Empty::Request& request, std_srvs::Empty::Respo
 bool setLedAnimationCallback(ardrone_autonomy::LedAnim::Request& request, ardrone_autonomy::LedAnim::Response& response);
 bool flatTrimCallback(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
 bool setFlightAnimationCallback(ardrone_autonomy::FlightAnim::Request& request, ardrone_autonomy::FlightAnim::Response& response);
-
+bool MagnitoCalibCallback(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response); //add Alex
 //All global drone configs that should be sent on init
 
 #define DEFAULT_CAM_STATE 0

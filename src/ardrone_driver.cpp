@@ -1,7 +1,10 @@
-#include "ardrone_driver.h"
+ #include "ardrone_driver.h"
 #include "teleop_twist.h"
 #include "video.h"
 #include <signal.h>
+#include <stdio.h> // Для парсинга
+#include <string.h> // Для парсинга
+#include <stdlib.h> // Для парсинга
 
 ////////////////////////////////////////////////////////////////////////////////
 // class ARDroneDriver
@@ -27,6 +30,10 @@ ARDroneDriver::ARDroneDriver()
     setLedAnimation_service = node_handle.advertiseService("ardrone/setledanimation", setLedAnimationCallback);
     flatTrim_service = node_handle.advertiseService("ardrone/flattrim", flatTrimCallback);
     setFlightAnimation_service = node_handle.advertiseService("ardrone/setflightanimation", setFlightAnimationCallback);
+    
+    magCalib_service = node_handle.advertiseService("ardrone/magcalib", MagnitoCalibCallback);
+    usbdata_pub = node_handle.advertise<std_msgs::String>("ardrone/usbdata", 1);//add Alex
+    ranges_pub = node_handle.advertise<ardrone_autonomy::Ranges>("ardrone/ranges", 1);//add Alex
 
     /*
         To be honest, I am not sure why advertising a service using class members should be this complicated!
@@ -754,6 +761,63 @@ void ARDroneDriver::publish_navdata(navdata_unpacked_t &navdata_raw, const ros::
 
     navdata_pub.publish(legacynavdata_msg);
     imu_pub.publish(imu_msg);
+}
+
+//void ARDroneDriver::publish_usbdata(uint8_t  &usbdata, const ros::Time &navdata_receive_time)
+void ARDroneDriver::publish_usbdata(std::string usbdata, const ros::Time &navdata_receive_time)
+{
+    //usbdata_msg.header.frame_id = droneFrameBase;
+    //usbdata_msg.header.stamp = navdata_receive_time;
+    //std::string str(tmp); //(const char*)usbdata
+    ranges_msg.header.stamp = navdata_receive_time;
+    //добавить парсинг строки и заполнение член-данных сообщения
+    //ranges_msg.range_front =
+    usbdata_msg.data = usbdata;
+    usbdata_pub.publish(usbdata_msg);
+    double ranges[4] = {0.0,0.0,0.0,0.0};
+    std::string tmp_str;
+
+    int cnt = -1;
+    bool prov = false;
+    int i = usbdata.find(";");
+    while (i != std::string::npos)
+    {
+	  tmp_str.assign(usbdata, 0, i);
+	  usbdata.assign(usbdata, i+1, usbdata.size());
+	 // ROS_INFO("tmp_str: %s", tmp_str.c_str());
+	  if (cnt == -1){
+	  if (tmp_str == "999") 
+	    prov = true; 
+	  else 
+	    break;
+	  }
+	  if (cnt>=0 && cnt<4){ 
+	    try {
+	      ranges[cnt]=std::atof(tmp_str.c_str());
+	     // ROS_INFO("cnt = %d; tmp_str: %s; range = %f", cnt, tmp_str.c_str(), ranges[cnt]);
+	    }
+	    catch (...) {
+	      prov = false;
+	    }
+	  }
+	  if (cnt>=4){
+	    if (tmp_str != "989") prov = false;
+	    break;
+	  }
+	  cnt++;
+	  i = usbdata.find(";");
+    }
+    
+    
+    // Присвоение значений и публикация, при условии отсутствия ошибок
+    if (prov)
+    {
+      ranges_msg.range_front = ranges[0];
+      ranges_msg.range_back = ranges[1];
+      ranges_msg.range_left = ranges[2];
+      ranges_msg.range_right = ranges[3];
+      ranges_pub.publish(ranges_msg);
+    }     
 }
 
 // Load actual auto-generated code to publish full navdata

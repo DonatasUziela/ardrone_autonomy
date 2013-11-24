@@ -79,6 +79,15 @@ bool flatTrimCallback(std_srvs::Empty::Request &request, std_srvs::Empty::Respon
     fprintf(stderr, "\nFlat Trim Set.\n");
 }
 
+//add Alex
+bool MagnitoCalibCallback(std_srvs::Empty::Request &request, std_srvs::Empty::Response &response)
+{
+    vp_os_mutex_lock(&twist_lock);
+    ardrone_at_set_calibration(0);
+    vp_os_mutex_unlock(&twist_lock);
+    fprintf(stderr, "\nMagnito calibration.\n");
+}
+
 void cmdVelCallback(const geometry_msgs::TwistConstPtr &msg)
 {
     vp_os_mutex_lock(&twist_lock);

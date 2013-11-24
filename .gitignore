@@ -1,3 +1,11 @@
+#temp files
+*.cpp~
+*.h~
+*.c~
+*.msg~
+Makefile~
+*.gitignore~
+
 # Compiled Object files
 *.slo
 *.lo
@@ -21,6 +29,7 @@ Makefile
 # Build results
 /ARDroneLib/FFMPEG/Includes
 /ARDroneLib/FFMPEG/FFMPEG
+/ARDroneLib/FFMPEG/ffmpeg
 /ARDroneLib/Soft/Build/
 /ARDroneLib/Soft/Common/generated_custom.h
 /bin
